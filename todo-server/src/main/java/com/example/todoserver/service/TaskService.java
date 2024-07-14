@@ -6,11 +6,13 @@ import com.example.todoserver.persist.entity.TaskEntity;
 import com.example.todoserver.web.model.Task;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.logging.log4j.util.Strings;
 import org.springframework.stereotype.Service;
 
 import java.sql.Date;
 import java.time.LocalDate;
 import java.util.List;
+import java.util.Objects;
 
 @Slf4j
 @Service
@@ -51,6 +53,39 @@ public class TaskService {
         var entity = getById(id);
         return entityToObject(entity);
     }
+
+    public Task update(Long id, String title, String description, LocalDate dueDate) {
+        var exists = getById(id);
+        exists.setTitle(Strings.isEmpty(title) ?
+                exists.getTitle() : title);
+        exists.setDescription(Strings.isEmpty(description) ?
+                exists.getDescription() : description);
+        exists.setDueDate(Objects.isNull(dueDate) ?
+                exists.getDueDate() : Date.valueOf(dueDate));
+
+        var updated = taskRepository.save(exists);
+        return entityToObject(updated);
+    }
+
+    public Task updateStatus(Long id, TaskStatus status) {
+        var entity = getById(id);
+        entity.setStatus(status);
+
+        var saved = taskRepository.save(entity);
+        return entityToObject(saved);
+    }
+
+    public boolean delete(Long id) {
+        try {
+            this.taskRepository.deleteById(String.valueOf(id));
+        } catch (Exception e) {
+            log.error("an error occurred while deleting [{}]", e.toString());
+            return false;
+        }
+        return true;
+    }
+
+
     private TaskEntity getById(Long id){
         return taskRepository.findById(String.valueOf(id)).orElseThrow(
                 () -> new IllegalArgumentException(String.format("not exists task id [%d]", id))

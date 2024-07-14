@@ -3,7 +3,9 @@ package com.example.todoserver.web;
 import com.example.todoserver.constants.TaskStatus;
 import com.example.todoserver.service.TaskService;
 import com.example.todoserver.web.model.Task;
+import com.example.todoserver.web.vo.ResultResponse;
 import com.example.todoserver.web.vo.TaskRequest;
+import com.example.todoserver.web.vo.TaskStatusRequest;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
@@ -84,5 +86,51 @@ public class TaskController {
         return ResponseEntity.ok(result);
     }
 
+    /**
+     * Update task response entity.
+     * 특정 ID에 해당하는 할일을 수정
+     *
+     * @param id   할일 ID
+     * @param task 수정할 할일 정보
+     * @return 수정된 할일 객체
+     */
+    @PutMapping("/{id}")
+    public ResponseEntity<Task> updateTask(@PathVariable Long id, @RequestBody TaskRequest task) {
+        var result = taskService.update(id, task.getTitle(), task.getDescription(), task.getDueDate());
+        return ResponseEntity.ok(result);
+    }
+
+    /**
+     * Update task status response entity.
+     * 특정 ID에 해당하는 할 일의 상태를 수정
+     *
+     * @param id  할일 ID
+     * @param req 수정할 할일 상태 정보
+     * @return 수정된 할일 객체
+     */
+    @PatchMapping("/{id}/status")
+    public ResponseEntity<Task> updateTaskStatus(@PathVariable Long id, @RequestBody TaskStatusRequest req) {
+        var result = taskService.updateStatus(id, req.getStatus());
+        return ResponseEntity.ok(result);
+    }
+
+    /**
+     * Delete task response entity.
+     * 특정 ID에 해당하는 할일을 삭제
+     *
+     * @param id 삭제할 할일 ID
+     * @return 삭제 겱과를 담은 응답 객체
+     */
+    @DeleteMapping("/{id}")
+    public ResponseEntity<ResultResponse> deleteTask(@PathVariable Long id) {
+        var result = taskService.delete(id);
+        return ResponseEntity.ok(new ResultResponse(result));
+    }
+
+    @GetMapping("/status")
+    public ResponseEntity<TaskStatus[]> getAllStatus(){
+        var status = TaskStatus.values();
+        return ResponseEntity.ok(status);
+    }
 
 }
